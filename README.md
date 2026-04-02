@@ -76,6 +76,32 @@ Summarize this into Notion: https://youtu.be/VIDEO_ID
 
 Claude will ask for the Notion token and page if you don't provide them.
 
+## Example diagram output
+
+The skill automatically generates colored Mermaid diagrams for any processes or flows discussed in the video. Here's an example from a video about AI agents:
+
+```mermaid
+flowchart TD
+  U("You - give a goal") --> O("1. OBSERVE<br>Read context, files,<br>previous tool results")
+  O --> T("2. THINK<br>Reason about what<br>to do next, plan approach")
+  T --> Act("3. ACT<br>Call a tool, edit a file,<br>run a command")
+  Act -->|get result| O
+  T -->|task complete| F("Generate Final Response")
+  F --> Out("Output to User")
+  classDef user fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+  classDef purple fill:#ede9fe,stroke:#8b5cf6,color:#4c1d95
+  classDef blue fill:#cffafe,stroke:#06b6d4,color:#164e63
+  classDef green fill:#d1fae5,stroke:#10b981,color:#065f46
+  classDef yellow fill:#fef9c3,stroke:#eab308,color:#713f12
+  classDef mint fill:#d1fae5,stroke:#10b981,color:#065f46
+  class U user
+  class O purple
+  class T blue
+  class Act green
+  class F yellow
+  class Out mint
+```
+
 ## How it works
 
 ```mermaid
