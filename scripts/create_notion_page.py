@@ -94,6 +94,14 @@ def markdown_to_blocks(md: str) -> list:
                 },
             })
 
+        # Heading 4+ → Notion only supports H1-H3, so map #### (and deeper) to H3
+        elif line.startswith("#### "):
+            blocks.append({
+                "object": "block",
+                "type": "heading_3",
+                "heading_3": {"rich_text": rich_text(line.lstrip("#").strip())},
+            })
+
         # Heading 1
         elif line.startswith("# "):
             blocks.append({
