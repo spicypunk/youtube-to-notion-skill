@@ -17,11 +17,21 @@ Extracts a YouTube video's transcript, generates intelligent structured notes, a
 
 ## Required inputs from the user
 
-Before starting, you need three things. If any are missing, ask for them:
+The Notion token and parent page ID are stored in `config.env` next to this skill, so the **only** thing you need from the user is:
 
 1. **YouTube URL** — any standard format works (`youtu.be/xxx`, `youtube.com/watch?v=xxx`)
-2. **Notion Integration Token** — starts with `secret_`. User creates one at https://www.notion.so/profile/integrations
-3. **Notion Parent Page ID** — the ID of the page where the new note should be created as a child. It's the 32-character string in the Notion page URL (strip hyphens). The user must also share that parent page with their integration.
+
+If the user wants the note to land somewhere other than the default page, they'll say so explicitly (e.g. "save it to my Conferences page"). Otherwise, do not ask — just use the configured default.
+
+### Loading credentials
+
+Before running `create_notion_page.py`, source the config file so `NOTION_TOKEN` and `NOTION_PARENT_PAGE_ID` are in the environment:
+
+```bash
+set -a; source ~/.claude/skills/youtube-to-notion/config.env; set +a
+```
+
+If `config.env` does not exist (first-time use), tell the user to copy `config.env.example` to `config.env` and fill in their `NOTION_TOKEN` and `NOTION_PARENT_PAGE_ID` (see README.md). Then stop — do not prompt them inline for the token.
 
 ---
 
@@ -99,21 +109,21 @@ Use the appropriate Mermaid diagram type for the content (`flowchart`, `sequence
 
 ## Step 3 — Write to Notion
 
-Use `scripts/create_notion_page.py` to post the notes. The script accepts:
-- `--token` — Notion integration token
-- `--parent-id` — parent page ID (32 hex chars, no hyphens)
+Use `scripts/create_notion_page.py` to post the notes. With `config.env` sourced (see "Loading credentials" above), the script reads the token and parent page ID from the environment automatically. You only need to pass:
+
 - `--title` — page title (use the video title)
 - `--markdown` — path to a markdown file containing the notes
 
 ```bash
-python scripts/create_notion_page.py \
-  --token "secret_xxx" \
-  --parent-id "PARENT_PAGE_ID" \
+set -a; source ~/.claude/skills/youtube-to-notion/config.env; set +a
+python ~/.claude/skills/youtube-to-notion/scripts/create_notion_page.py \
   --title "VIDEO_TITLE" \
   --markdown /tmp/notes.md
 ```
 
 The script converts markdown to Notion blocks and creates the page. It prints the URL of the newly created page on success.
+
+**Never echo `$NOTION_TOKEN` or include the value in any output.**
 
 ---
 
@@ -131,4 +141,4 @@ The script converts markdown to Notion blocks and creates the page. It prints th
 
 ## Security note
 
-Never log, echo, or store the Notion token in any output file. Pass it only via command-line arguments to scripts. Do not include it in the generated notes.
+Never log, echo, or store the Notion token in any output file. The script reads the token from the `NOTION_TOKEN` environment variable (loaded from `config.env`); do not pass it on the command line, and do not include it in the generated notes. `config.env` is gitignored — keep it that way.

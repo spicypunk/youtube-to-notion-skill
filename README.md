@@ -27,54 +27,48 @@ Here's what the notes look like in Notion:
 
 ## Installation
 
-### One-liner
-
-```bash
-mkdir -p ~/.claude/skills/youtube-to-notion/scripts && \
-  curl -sL https://raw.githubusercontent.com/spicypunk/youtube-to-notion-skill/main/SKILL.md -o ~/.claude/skills/youtube-to-notion/SKILL.md && \
-  curl -sL https://raw.githubusercontent.com/spicypunk/youtube-to-notion-skill/main/scripts/fetch_transcript.py -o ~/.claude/skills/youtube-to-notion/scripts/fetch_transcript.py && \
-  curl -sL https://raw.githubusercontent.com/spicypunk/youtube-to-notion-skill/main/scripts/create_notion_page.py -o ~/.claude/skills/youtube-to-notion/scripts/create_notion_page.py
-```
-
-### Manual
-
-1. Clone this repo into your Claude Code skills folder:
+Clone this repo as your Claude Code skill. The target directory must not already exist (otherwise `git clone` will nest the repo inside it):
 
 ```bash
 git clone https://github.com/spicypunk/youtube-to-notion-skill.git ~/.claude/skills/youtube-to-notion
-```
-
-2. Install the Python dependency:
-
-```bash
 pip install youtube-transcript-api
 ```
 
-## Setup
+If `~/.claude/skills/youtube-to-notion` already exists, delete it first or clone elsewhere and move the files.
 
-Before using, you need:
+## Setup (one-time)
 
-1. **A Notion integration token** - Create one at [notion.so/profile/integrations](https://www.notion.so/profile/integrations)
-2. **A Notion page** - The page where notes will be created as children. Share this page with your integration (click "..." > "Add connections" > select your integration)
+1. **Create a Notion integration** at [notion.so/profile/integrations](https://www.notion.so/profile/integrations). Copy the "Internal Integration Secret" — that's your token.
+
+2. **Create or pick a Notion page** where new video notes will be created as child pages. On that page, click `...` → `Connections` → add your integration so it has write access.
+
+3. **Copy `config.env.example` to `config.env`** and fill in your values:
+
+```bash
+cp ~/.claude/skills/youtube-to-notion/config.env.example ~/.claude/skills/youtube-to-notion/config.env
+chmod 600 ~/.claude/skills/youtube-to-notion/config.env
+$EDITOR ~/.claude/skills/youtube-to-notion/config.env
+```
+
+The file holds two values:
+- `NOTION_TOKEN` — your integration secret (`ntn_...` or `secret_...`)
+- `NOTION_PARENT_PAGE_ID` — the 32-char hex string from your Notion page URL (strip hyphens). Example: from `https://www.notion.so/My-Notes-336a8c1feb0680c8b74fda201bff223e?source=...`, the ID is `336a8c1feb0680c8b74fda201bff223e`.
+
+`config.env` is gitignored — it stays on your machine and is never committed.
 
 ## Usage
 
-In Claude Code, just say:
-
-```
-Take notes on this video and save to Notion:
-- YouTube: https://www.youtube.com/watch?v=VIDEO_ID
-- Notion page: https://www.notion.so/PAGE_ID
-- Token: ntn_xxx or secret_xxx
-```
-
-Or more casually:
+Once `config.env` is set up, you only need to give Claude a YouTube URL:
 
 ```
 Summarize this into Notion: https://youtu.be/VIDEO_ID
 ```
 
-Claude will ask for the Notion token and page if you don't provide them.
+Claude reads the token and parent page from `config.env` automatically. To send a note to a different page just for one video, mention it explicitly:
+
+```
+Summarize this into Notion under my "Conferences" page: https://youtu.be/VIDEO_ID
+```
 
 ## Example diagram output
 

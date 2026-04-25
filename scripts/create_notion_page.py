@@ -3,12 +3,17 @@
 Create a Notion page from a markdown file.
 Converts common markdown to Notion blocks.
 
+Reads NOTION_TOKEN and NOTION_PARENT_PAGE_ID from environment if --token/--parent-id
+are not given. Pass the token via env var to keep it out of `ps` output.
+
 Usage:
+  create_notion_page.py --title "Title" --markdown /path/to/notes.md
   create_notion_page.py --token secret_xxx --parent-id PAGE_ID --title "Title" --markdown /path/to/notes.md
 """
 
 import argparse
 import json
+import os
 import re
 import sys
 import urllib.request
@@ -234,11 +239,18 @@ def create_page(token: str, parent_id: str, title: str, blocks: list) -> str:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--token", required=True)
-    parser.add_argument("--parent-id", required=True)
+    parser.add_argument("--token", default=os.environ.get("NOTION_TOKEN"))
+    parser.add_argument("--parent-id", default=os.environ.get("NOTION_PARENT_PAGE_ID"))
     parser.add_argument("--title", required=True)
     parser.add_argument("--markdown", required=True)
     args = parser.parse_args()
+
+    if not args.token:
+        print("ERROR: Notion token missing. Set NOTION_TOKEN env var (or copy config.env.example to config.env and fill it in) or pass --token.", file=sys.stderr)
+        sys.exit(2)
+    if not args.parent_id:
+        print("ERROR: Notion parent page ID missing. Set NOTION_PARENT_PAGE_ID env var (or copy config.env.example to config.env and fill it in) or pass --parent-id.", file=sys.stderr)
+        sys.exit(2)
 
     with open(args.markdown, "r", encoding="utf-8") as f:
         md = f.read()
